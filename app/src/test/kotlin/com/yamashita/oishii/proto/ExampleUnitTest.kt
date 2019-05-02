@@ -1,4 +1,4 @@
-package com.yamashita.oishii.proto
+package com.ixap2i.proto
 
 import org.junit.Test
 

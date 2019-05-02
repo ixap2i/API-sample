@@ -5,5 +5,8 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorNavyDark">#043A77</color>
     <color name="colorNavy">#033977</color>
-    <color name="colorYellow">#ffea00</color>
+    <color name="colorYellow">#fafa96</color>
+    <color name="colorLightBlue">#9ECFFA</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorTransparent">#00000000</color>
 </resources>
