@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ixap2i.proto.adapters.AlbumListAdapter
@@ -43,7 +44,9 @@ class MainActivity : AppCompatActivity() {
 
     private var counter = 0
 
-    val liveData = CookingRecordViewModel()
+    // MainActivityの生存期間内で生き続ける
+    val liveData = ViewModelProviders.of(this).get(CookingRecordViewModel::class.java)
+//    val liveData = CookingRecordViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,36 +59,39 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        // 最初のページを表示する
         try {
             GlobalScope.launch(Dispatchers.Main) {
-            val jsonData = updateUI().await()
+                val jsonData = updateUI().await()
 
-            val moshi = Moshi.Builder()
-                .add(Album.INSTANCE)
-                .build()
-            val jsonAdapter: JsonAdapter<Album> = moshi.adapter(Album::class.java)
+                val moshi = Moshi.Builder()
+                    .add(Album.INSTANCE)
+                    .build()
 
-            val records = jsonAdapter.fromJson(jsonData.toString())!!
-            viewManager = GridLayoutManager(this@MainActivity, 2)
-            val cookingRecordLists  = records!!.cookingRecords.subList(0, 10)
-            viewAdapter = AlbumListAdapter(cookingRecordLists)
+                val jsonAdapter: JsonAdapter<Album> = moshi.adapter(Album::class.java)
 
-            recyclerView = findViewById<RecyclerView>(R.id.main_album_rows).apply {
-                setHasFixedSize(true)
-                layoutManager = viewManager
-                adapter = viewAdapter
+                val records = jsonAdapter.fromJson(jsonData.toString())!!
+                // リストの0から10まで取得する
+                val cookingRecordLists  = records.cookingRecords.subList(0, 10)
+
+                viewManager = GridLayoutManager(this@MainActivity, 2)
+                viewAdapter = AlbumListAdapter(cookingRecordLists)
+                recyclerView = findViewById<RecyclerView>(R.id.main_album_rows).apply {
+                    setHasFixedSize(true)
+                    layoutManager = viewManager
+                    adapter = viewAdapter
+                }
+
+                progressIndicator = findViewById(R.id.progressBar)
+                progressIndicator.visibility = View.GONE
+
+                if(cookingRecordLists.size == 0) {
+                    textView = findViewById(R.id.textViewWaring)
+                    textView.visibility = View.VISIBLE
+                }
+                liveData.cookRecoLiveData.postValue(records!!.cookingRecords)
+                counter = 10
             }
-
-            progressIndicator = findViewById(R.id.progressBar)
-            progressIndicator.visibility = View.GONE
-
-            if(cookingRecordLists.size == 0) {
-                textView = findViewById(R.id.textViewWaring)
-                textView.visibility = View.VISIBLE
-            }
-            liveData.cookRecoLiveData.postValue(records!!.cookingRecords)
-            counter = 10
-        }
 
         } catch(ex: Exception) {
             print(ex.stackTrace)
@@ -101,6 +107,8 @@ class MainActivity : AppCompatActivity() {
                     try {
                         val cookingRecordLists = liveData.cookRecoLiveData.value!!.subList(counter - 1,
                             counter + (counter + 9 - liveData.cookRecoLiveData.value!!.size))
+
+
                         viewAdapter = AlbumListAdapter(cookingRecordLists)
                         recyclerView = findViewById<RecyclerView>(R.id.main_album_rows).apply {
                             setHasFixedSize(true)
@@ -155,7 +163,6 @@ class MainActivity : AppCompatActivity() {
                     } catch(ex: Exception) {
                         ex.printStackTrace()
                     }
-
                 }
 
                 recyclerView = findViewById<RecyclerView>(R.id.main_album_rows).apply {
