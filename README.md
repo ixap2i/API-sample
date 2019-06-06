@@ -1,6 +1,6 @@
-# API-sample
+# api-sample
 
-WebApiを叩いて表示するだけのサンプルです。<br>
+Web-Apiを叩いて表示するだけのサンプルです。<br>
 データの取得はKotlin coroutineを採用し、非同期で取得するようにしました。<br>
 キャッシュなどを考慮し、ViewModel, Picassoを導入しました。<br>
 JsonのパースについてGson/moshiで対応していたものをkotshiを使用することで、スムーズにシリアライズできるようにしました。<br><br>
